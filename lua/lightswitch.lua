@@ -111,7 +111,7 @@ function lightswitch.refresh()
 	for _, toggle in ipairs(filtered_toggles) do
 		local toggle_indicator = toggle.state and TOGGLE_ON or TOGGLE_OFF
 		local name_padded = toggle.name .. string.rep(" ", 12 - #toggle.name)
-		table.insert(lines, string.format("%s  %s", name_padded, toggle_indicator))
+		table.insert(lines, string.format("%s  %s", toggle_indicator, name_padded))
 	end
 
 	-- Update buffer content

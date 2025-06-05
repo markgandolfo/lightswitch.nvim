@@ -91,12 +91,12 @@ require('lightswitch').setup({
 
 - `j`/`k`: Navigate up and down through toggle options
 - `<Space>` or `<Enter>`: Toggle the currently selected option
-- `/`: Start searching to filter options
-- `<Esc>` or `q`: Close the LightSwitch UI
+- `/`: Start searching to filter options (updates in real-time as you type)
+- `<Esc>`: Clear search and return to main window (when in search mode) or close UI
+- `q`: Close the LightSwitch UI
 
 ## UI Features
 
-- Arrow indicator (`→`) shows your current selection
 - Slider representation for toggle state:
   - ON: `[───⦿ ]` (filled circle on right)
   - OFF: `[⦾───]` (empty circle on left)

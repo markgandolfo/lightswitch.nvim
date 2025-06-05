@@ -1,6 +1,3 @@
--- lightswitch.lua: A toggle UI for Neovim using nui.nvim
--- A plugin that displays toggleable options with slider indicators
-
 local Popup = require("nui.popup")
 local Layout = require("nui.layout")
 local event = require("nui.utils.autocmd").event
@@ -16,8 +13,6 @@ lightswitch.selected_idx = 1
 -- Constants for toggle display
 local TOGGLE_ON = "[───⦿ ]"
 local TOGGLE_OFF = "[⦾────]"
-local SELECTION_ARROW = "→ "
-local NO_SELECTION = "  "
 
 -- Add a toggle option to the lightswitch
 function lightswitch.add_toggle(name, enable_cmd, disable_cmd, state)
@@ -147,6 +142,9 @@ function lightswitch.show()
 		lightswitch.layout = nil
 	end
 
+	-- Reset filter when opening
+	lightswitch.filter = ""
+
 	-- Calculate height based on number of toggles (min 5, max 15)
 	local num_toggles = #lightswitch.toggles
 	local content_height = math.min(math.max(num_toggles, 5), 15) + 5
@@ -260,9 +258,53 @@ function lightswitch.show()
 	end)
 
 	lightswitch.input:map("i", "<Esc>", function()
+		-- Clear search on escape
+		lightswitch.filter = ""
+		lightswitch.refresh()
 		vim.api.nvim_set_current_win(lightswitch.win.winid)
 		vim.cmd("stopinsert")
 	end)
+
+	-- Prevent backspace from deleting "Search: " prefix
+	lightswitch.input:map("i", "<BS>", function()
+		local cursor = vim.api.nvim_win_get_cursor(lightswitch.input.winid)
+		if cursor[2] <= 8 then
+			-- Don't allow backspace at or before position 8
+			return ""
+		else
+			-- Allow normal backspace
+			return vim.api.nvim_replace_termcodes("<BS>", true, true, true)
+		end
+	end, { expr = true })
+
+	-- Add autocmd for real-time search
+	vim.api.nvim_create_autocmd({ "TextChangedI" }, {
+		buffer = lightswitch.input.bufnr,
+		callback = function()
+			local search_line = vim.api.nvim_buf_get_lines(lightswitch.input.bufnr, 0, 1, false)[1]
+			if search_line then
+				-- Ensure "Search: " prefix is maintained
+				if not search_line:match("^Search: ") then
+					vim.api.nvim_buf_set_lines(lightswitch.input.bufnr, 0, 1, false, { "Search: " })
+					vim.api.nvim_win_set_cursor(lightswitch.input.winid, { 1, 8 })
+				else
+					lightswitch.filter = string.sub(search_line, 9) -- Remove "Search: " prefix
+					lightswitch.refresh()
+				end
+			end
+		end,
+	})
+
+	-- Prevent cursor from moving before "Search: "
+	vim.api.nvim_create_autocmd({ "CursorMovedI" }, {
+		buffer = lightswitch.input.bufnr,
+		callback = function()
+			local cursor = vim.api.nvim_win_get_cursor(lightswitch.input.winid)
+			if cursor[2] < 8 then
+				vim.api.nvim_win_set_cursor(lightswitch.input.winid, { 1, 8 })
+			end
+		end,
+	})
 
 	-- Set initial focus and cursor position
 	vim.api.nvim_set_current_win(lightswitch.win.winid)

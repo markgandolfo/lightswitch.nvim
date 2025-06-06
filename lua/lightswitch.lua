@@ -117,6 +117,21 @@ function lightswitch.refresh()
 	-- Update buffer content
 	vim.api.nvim_buf_set_lines(lightswitch.win.bufnr, 0, -1, false, lines)
 
+	-- Apply highlighting based on toggle state
+	for i, toggle in ipairs(filtered_toggles) do
+		if not toggle.state then
+			vim.api.nvim_buf_add_highlight(lightswitch.win.bufnr, -1, "LightSwitchOff", i - 1, 0, -1)
+		else
+			-- Check if "on" color is defined
+			local hl = vim.api.nvim_get_hl(0, { name = "LightSwitchOn" })
+			if hl and next(hl) then
+				vim.api.nvim_buf_add_highlight(lightswitch.win.bufnr, -1, "LightSwitchOn", i - 1, 0, -1)
+			else
+				vim.api.nvim_buf_clear_namespace(lightswitch.win.bufnr, -1, i - 1, i)
+			end
+		end
+	end
+
 	-- Ensure cursor stays within bounds after filtering
 	if lightswitch.win.winid and vim.api.nvim_win_is_valid(lightswitch.win.winid) then
 		local cursor = vim.api.nvim_win_get_cursor(lightswitch.win.winid)
@@ -315,6 +330,17 @@ end
 function lightswitch.setup(opts)
 	opts = opts or {}
 	lightswitch.toggles = {}
+
+	-- Set up colors with defaults
+	local colors = opts.colors or {}
+	colors.off = colors.off or "#4a4a4a"
+	colors.on = colors.on or nil -- nil means use default text color
+
+	-- Define highlight groups
+	vim.api.nvim_set_hl(0, "LightSwitchOff", { fg = colors.off })
+	if colors.on then
+		vim.api.nvim_set_hl(0, "LightSwitchOn", { fg = colors.on })
+	end
 
 	-- Add default toggles if no options provided
 	if not opts.toggles or #opts.toggles == 0 then

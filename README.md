@@ -104,6 +104,8 @@ require('lightswitch').setup({
 
 ## Customisation
 
+### Toggle Configuration
+
 You can add your own toggles using the setup function:
 
 ```lua
@@ -116,6 +118,22 @@ require('lightswitch').setup({
       state = false
     },
     -- Add more toggles here
+  }
+})
+```
+
+### Color Customisation
+
+You can customize the colors used for toggle states:
+
+```lua
+require('lightswitch').setup({
+  colors = {
+    off = "#4a4a4a",  -- Dark grey for OFF state (default)
+    on = "#00ff00"    -- Green for ON state (optional, defaults to normal text color)
+  },
+  toggles = {
+    -- your toggles here
   }
 })
 ```

@@ -2,7 +2,7 @@
 
 A simple and elegant Neovim plugin that provides a UI for toggling various options using the `nui.nvim` library.
 
-![output](https://github.com/user-attachments/assets/b5fd6fef-3c1f-4230-be3a-0ad5b787cb1b)
+[lightswitch.nvim.webm](https://github.com/user-attachments/assets/5a560a88-cdb4-4912-8d8d-981923af98ec)
 
 ## Features
 

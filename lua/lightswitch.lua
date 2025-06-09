@@ -117,6 +117,9 @@ function lightswitch.refresh()
 	-- Update buffer content
 	vim.api.nvim_buf_set_lines(lightswitch.win.bufnr, 0, -1, false, lines)
 
+	-- Clear all highlights first
+	vim.api.nvim_buf_clear_namespace(lightswitch.win.bufnr, -1, 0, -1)
+
 	-- Apply highlighting based on toggle state
 	for i, toggle in ipairs(filtered_toggles) do
 		if not toggle.state then
@@ -126,8 +129,6 @@ function lightswitch.refresh()
 			local hl = vim.api.nvim_get_hl(0, { name = "LightSwitchOn" })
 			if hl and next(hl) then
 				vim.api.nvim_buf_add_highlight(lightswitch.win.bufnr, -1, "LightSwitchOn", i - 1, 0, -1)
-			else
-				vim.api.nvim_buf_clear_namespace(lightswitch.win.bufnr, -1, i - 1, i)
 			end
 		end
 	end

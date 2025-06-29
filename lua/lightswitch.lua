@@ -9,10 +9,11 @@ lightswitch.input = nil
 lightswitch.layout = nil
 lightswitch.filter = ""
 lightswitch.selected_idx = 1
+lightswitch.prev_win = nil
 
 -- Constants for toggle display
-local TOGGLE_ON = "[───⦿ ]"
-local TOGGLE_OFF = "[⦾────]"
+local TOGGLE_ON = "[──⦿ ]"
+local TOGGLE_OFF = "[⦾───]"
 
 -- Add a toggle option to the lightswitch
 function lightswitch.add_toggle(name, enable_cmd, disable_cmd, state)
@@ -67,13 +68,19 @@ function lightswitch.execute_toggle()
 				if not success then
 					vim.notify("Error executing Lua: " .. tostring(err), vim.log.levels.ERROR)
 				end
-			elseif cmd:match("<CR>") then
-				-- It's a command with key notation
-				local keys = vim.api.nvim_replace_termcodes(cmd, true, true, true)
-				vim.api.nvim_feedkeys(keys, "n", false)
 			else
-				-- It's a regular Ex command
-				vim.cmd(cmd)
+				-- Remove <CR> if present and execute as Ex command
+				local clean_cmd = cmd:gsub("<CR>$", "")
+
+				-- Execute command in the original window context if it exists
+				if lightswitch.prev_win and vim.api.nvim_win_is_valid(lightswitch.prev_win) then
+					local current_win = vim.api.nvim_get_current_win()
+					vim.api.nvim_set_current_win(lightswitch.prev_win)
+					vim.cmd(clean_cmd)
+					vim.api.nvim_set_current_win(current_win)
+				else
+					vim.cmd(clean_cmd)
+				end
 			end
 		else
 			vim.notify("No command defined for this state", vim.log.levels.WARN)
@@ -153,6 +160,9 @@ end
 
 -- Show the lightswitch UI
 function lightswitch.show()
+	-- Save the current window before opening popup
+	lightswitch.prev_win = vim.api.nvim_get_current_win()
+
 	if lightswitch.layout then
 		lightswitch.layout:unmount()
 		lightswitch.layout = nil
